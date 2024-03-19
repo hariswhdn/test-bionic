@@ -1,39 +1,41 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import Button from "../components/Button";
 
 const Field = ({
   labelClass = "",
   multiple = false,
+  fileName = "",
   isError = false,
-  label,
+  label = "",
   type = "text",
   placeholder = "",
   disabled = false,
   value = "",
-  triggerClass,
+  triggerClass = "",
   triggerText = "",
   required = false,
   onInput = () => {},
   onChange = () => {},
+  setFileName = () => {},
 }) => {
   const inputRef = useRef(null);
-
-  const [fileName, setFileName] = useState("");
 
   return (
     <label className={["flex flex-col", labelClass].join(" ")}>
       {label ? <p className="font-bold mb-2">{label}</p> : <></>}
       {type === "textarea" ? (
         <textarea
+          ref={inputRef}
           rows="1"
           className={[
-            "border border-b-black/20 border-transparent bg-transparent py-[7px] px-4",
-            isError ? "border-[#e74c3c] text-[#e74c3c]" : "",
+            "bg-transparent border-transparent py-[7px] px-4 border",
+            isError ? "border-b-[#e74c3c] text-[#e74c3c]" : "border-b-black/10",
           ].join(" ")}
           placeholder={placeholder}
           disabled={disabled}
           value={value}
-          onInput={onInput}
+          onInput={(e) => onInput(e)}
+          onChange={(e) => onChange(e)}
           required={required}
           autoComplete="off"
           spellCheck="false"
@@ -47,7 +49,7 @@ const Field = ({
               type === "file" ? "w-0 h-0 border-0 p-0" : "py-[7px] px-4 border",
               type !== "file" && isError
                 ? "border-b-[#e74c3c] text-[#e74c3c]"
-                : "border-b-black/20",
+                : "border-b-black/10",
             ].join(" ")}
             multiple={multiple}
             type={type}
@@ -81,7 +83,7 @@ const Field = ({
         </>
       )}
       {isError ? (
-        <p className="mt-1 text-[#e74c3c] font-bold">This field is required</p>
+        <p className="mt-1 text-[#e74c3c]">This field is required</p>
       ) : (
         <></>
       )}

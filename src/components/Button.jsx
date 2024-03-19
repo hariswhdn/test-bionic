@@ -10,10 +10,10 @@ const Button = ({
     <button
       type={type}
       className={[
-        "flex items-center gap-x-2 justify-center py-2 px-4 bg-green border-0 rounded-md",
+        "flex items-center gap-x-2 justify-center py-2 px-4 border-0 rounded-md",
         className,
       ].join(" ")}
-      onClick={onClick}
+      onClick={() => onClick()}
       disabled={disabled}
     >
       {icon ? <span className="material-icons-outlined">{icon}</span> : <></>}

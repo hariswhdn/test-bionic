@@ -30,10 +30,7 @@ export const getJobs = () => async (dispatch) => {
     const response = await axios.get(
       `${import.meta.env.VITE_BASE_URL}/pt-job-posts/no-auth`
     );
-    if (response?.data?.length > 1) {
-      await dispatch(setJobs(response.data));
-    }
-    await dispatch(setLoading(false));
+    await dispatch(setJobs(response?.data?.length > 0 ? response.data : []));
   } catch (error) {
     await dispatch(setError(error.message));
   }
@@ -42,15 +39,13 @@ export const getJobs = () => async (dispatch) => {
 export const postJob = (data) => async (dispatch) => {
   await dispatch(setLoading(true));
   try {
-    const response = await axios.post(
+    await axios.post(
       `${import.meta.env.VITE_BASE_URL}/pt-job-applies/no-auth`,
       data
     );
-    console.log("post", response);
     await dispatch(setLoading(false));
     return true;
   } catch (error) {
-    console.log("post error", error);
     await dispatch(setError(error.message));
   }
 };

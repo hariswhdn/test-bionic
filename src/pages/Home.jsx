@@ -1,25 +1,27 @@
 import parse from "html-react-parser";
+import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getJobs, postJob } from "../stores/jobSlice";
+import { getJobs, postJob, jobSlice } from "../stores/jobSlice";
 import Field from "../components/Field";
 import Button from "../components/Button";
 import Dialog from "../components/Dialog";
 import Alert from "../components/Alert";
 import { obj_text_dialog, obj_text_alert } from "../utils/text";
 
-const Test = () => {
+const Home = () => {
   const dispatch = useDispatch();
 
   const { loading, jobs, error } = useSelector((state) => state.job);
 
   const [init, setInit] = useState(false);
-  const [selectedObj, setSelectedObj] = useState(null);
+  const [selectedJob, setSelectedJob] = useState(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [file, setFile] = useState([]);
+  const [fileName, setFileName] = useState("");
   const [isCanError, setIsCanError] = useState(false);
   const [arrError, setArrError] = useState([]);
   const [objDialog, setObjDialog] = useState(null);
@@ -47,13 +49,14 @@ const Test = () => {
     if (init) {
       if (error) {
         setObjAlert({
-          title: obj_text_alert[objDialog.action].error.title,
-          text: obj_text_alert[objDialog.action].error.text,
+          title:
+            obj_text_alert?.[objDialog?.action]?.error?.title ||
+            "Terjadi kesalahan",
+          text: obj_text_alert?.[objDialog?.action]?.error?.text || error,
           is_error: true,
         });
         setObjDialog(null);
       }
-      console.log("error", error);
     }
   }, [error]);
 
@@ -97,21 +100,31 @@ const Test = () => {
     });
   };
 
+  const formReset = () => {
+    setName("");
+    setPhone("");
+    setEmail("");
+    setMessage("");
+    setFile([]);
+    setFileName("");
+    setIsCanError(false);
+    setArrError([]);
+  };
+
   const fetchPostJob = () => {
     if (init && !loading) {
-      dispatch(
-        postJob({
-          displayName: name,
-          subject: selectedObj.title,
-          email: email,
-          phone: phone,
-          message: message,
-          // file: file,
-          ptJobApplyType: "APPLICATION",
-          isActive: selectedObj.isActive,
-          ptJobPost: selectedObj,
-        })
-      ).then((ok) => {
+      const data = {
+        displayName: name,
+        subject: selectedJob.title,
+        email: email,
+        phone: phone,
+        message: message,
+        ptJobApplyType: "APPLICATION",
+        isActive: selectedJob.isActive,
+        ptJobPost: { id: selectedJob.id },
+      };
+      formReset();
+      dispatch(postJob(data)).then((ok) => {
         if (ok) {
           setObjAlert({
             title: obj_text_alert[objDialog.action].success.title,
@@ -119,7 +132,6 @@ const Test = () => {
             is_error: false,
           });
           setObjDialog(null);
-          // resetThisPage();
         }
       });
     }
@@ -127,39 +139,45 @@ const Test = () => {
 
   return (
     <>
+      <Navbar />
       <ul
         className={[
           "grid grid-cols-2 gap-4 p-4",
-          "[&>li]:flex [&>li]:shadow-lg [&>li]:bg-[#f0ede5] [&>li]:items-center [&>li]:justify-between [&>li]:rounded-lg [&>li]:py-3 [&>li]:px-6",
-          "[&>li>p]:text-[#4b9741] [&>li>p]:font-bold",
-          "[&>li>button]:text-[#fff] [&>li>button]:rounded-md [&>li>button]:px-4 [&>li>button]:py-1.5 [&>li>button]:bg-[#f09506] [&>li>button]:border-0 [&>li>button]:font-bold [&>li>button]:whitespace-nowrap",
+          "max-md:grid-cols-1",
+          "[&>li]:flex [&>li]:shadow-lg [&>li]:bg-[#f0ede5] [&>li]:items-start [&>li]:justify-between [&>li]:rounded-lg [&>li]:py-3 [&>li]:px-6 [&>li]:gap-x-2",
+          "[&>li>div]:min-h-[36px] [&>li>div]:flex [&>li>div]:items-center",
+          "[&>li>div>p]:text-[#4b9741] [&>li>div>p]:font-bold",
         ].join(" ")}
       >
         {jobs.map((o) => (
           <li key={o.id}>
-            <p>{o.title}</p>
-            <button type="button" onClick={() => setSelectedObj(o)}>
-              See Job
-            </button>
+            <div>
+              <p>{o.title}</p>
+            </div>
+            <Button
+              className="bg-[#f09506] text-white py-1.5 whitespace-nowrap"
+              text="See Job"
+              onClick={() => setSelectedJob(o)}
+            />
           </li>
         ))}
       </ul>
-      {selectedObj ? (
+      {selectedJob ? (
         <section className="flex z-10 absolute top-0 left-0 w-full h-full overflow-y-auto items-center justify-center bg-black/20">
-          <div className="flex flex-col max-w-[1152px] w-full bg-[#f0ede5] m-auto rounded-xl border border-black/20 divide-y divide-black/20">
-            <div className="flex items-center justify-between py-4 px-6">
-              <p className="font-bold">{selectedObj.title}</p>
+          <div className="flex flex-col max-w-[1152px] w-full bg-[#f0ede5] m-auto rounded-lg border border-black/10 divide-y divide-black/10">
+            <div className="flex items-center justify-between py-3 px-6">
+              <p className="font-bold">{selectedJob.title}</p>
               <button
                 type="button"
-                onClick={() => setSelectedObj(null)}
+                onClick={() => setSelectedJob(null)}
                 className="flex"
               >
                 <span className="material-icons-outlined">close</span>
               </button>
             </div>
-            <div className="flex flex-col py-4 px-6 gap-y-4">
+            <div className="flex flex-col p-6 gap-y-4">
               <p className="text-[#4b9741] mb-2 font-bold text-3xl">
-                {selectedObj.title}
+                {selectedJob.title}
               </p>
               <div
                 className={[
@@ -168,7 +186,7 @@ const Test = () => {
                   "[&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-10 [&_ul]:flex [&_ul]:flex-col",
                 ].join(" ")}
               >
-                {parse(selectedObj.description.txt)}
+                {parse(selectedJob.description.txt)}
               </div>
               <div className="flex flex-col gap-y-4">
                 <p className="text-xl font-bold">Send Your Job Application</p>
@@ -176,7 +194,12 @@ const Test = () => {
                   onSubmit={(e) => onSubmit(e)}
                   className="flex flex-col gap-y-4"
                 >
-                  <div className="grid grid-cols-2 gap-4">
+                  <div
+                    className={[
+                      "grid grid-cols-2 gap-4",
+                      "max-md:grid-cols-1",
+                    ].join(" ")}
+                  >
                     <Field
                       isError={arrError.indexOf("name") > -1}
                       label="Full name"
@@ -195,7 +218,12 @@ const Test = () => {
                       onInput={(e) => setPhone(e.target.value)}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div
+                    className={[
+                      "grid grid-cols-2 gap-4",
+                      "max-md:grid-cols-1",
+                    ].join(" ")}
+                  >
                     <Field
                       isError={arrError.indexOf("email") > -1}
                       label="Email address"
@@ -220,12 +248,14 @@ const Test = () => {
                     triggerClass="bg-[#f09506] text-white"
                     triggerText="Upload CV/Resume"
                     type="file"
+                    fileName={fileName}
+                    setFileName={(v) => setFileName(v)}
                     multiple={true}
                     disabled={false}
                     onChange={(e) => setFile([...e.target.files])}
                   />
                   <Button
-                    className="bg-[#4b9741] text-white whitespace-nowrap"
+                    className="bg-[#4b9741] mt-2 text-white whitespace-nowrap place-self-start"
                     type="submit"
                     text="Submit Application"
                     disabled={false}
@@ -276,4 +306,4 @@ const Test = () => {
   );
 };
 
-export default Test;
+export default Home;
